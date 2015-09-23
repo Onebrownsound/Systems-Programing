@@ -1,3 +1,5 @@
+//Author: Dominick Modica
+//Implement Linked List for Systems Programming
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -6,6 +8,11 @@ struct Node{
     int data;
     struct Node* next;
 };
+
+void search_list(struct Node *root,int value);
+void print_list(struct Node *root);
+void add_node(struct Node *appending_node, int number_value);
+struct Node * get_last_node(struct Node *root);
 
 //search_list receives a root point for a list and a value to search for
 void search_list(struct Node *root,int value){
@@ -48,6 +55,7 @@ void add_node(struct Node *appending_node, int number_value)
     new_node->next=NULL;
     new_node->data=number_value;
     printf("The value %d has been added to the linked list \n",new_node->data);
+
     
 }
 
@@ -62,6 +70,7 @@ struct Node * get_last_node(struct Node *root)
     }
     //return this node
     return copy_root;
+
 }
 
 int main(int argc, char * argv)
@@ -95,5 +104,6 @@ int main(int argc, char * argv)
     search_list(root, index++);
     //search using a random int, didn't think this syntax would work but it does...sort of cool
     search_list(root, rand()%10);
-    
+    free(current);
+    free(root);
 }
