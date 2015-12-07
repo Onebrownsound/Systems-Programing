@@ -31,9 +31,13 @@
 #define  __INVRT   			0x10
 #define  __OUTDRV  			0x04
 
+#define ON 0
+#define SERVO_MIN 150
+#define SERVO_MAX 600
+#define CHANNEL 0
 
 
-int setup()
+int setup() //setup tells the kernel i2c driver which i2c to use
 {
 	int file;
 	int adapter_nr = 1; /* needs to be looked up in /dev/i2c-NUMBERISHERE for me it is 1 */
@@ -48,23 +52,28 @@ int setup()
 
 	int addr = 0x40; /* The I2C address this is my address from sudo i2cdetect -y 1 */
 
-	if (ioctl(file, I2C_SLAVE, addr) < 0) {
+	if (ioctl(file, I2C_SLAVE, addr) < 0) { /*I2C_SLAVE is a constant in the library used 
+	for denoting we are going to set it to this address*\
+
 	 /* ERROR HANDLING; you can check errno to see what went wrong */
 	 exit(1);
 	}
-	return file;
+	return file; //returns fd just in case we need it
 }
 
 
 
 
 int main(){
-	int file_number;
-  file_number=setup();
-  i2c_smbus_write_byte(file_number, __LED0_ON_H);
-
-  
-
+int file_number;
+file_number=setup();
+while(1){
+//write byte data to (file,register,value)
+i2c_smbus_write_byte_data(file_number,__LED0_ON_L+4 * CHANNEL, on & 0xFF)
+i2c_smbus_write_byte_data(file_number,__LED0_ON_H+4 * CHANNEL, on >> 8)
+i2c_smbus_write_byte_data(file_number,__LED0_OFF_L+4 * CHANNEL, off & 0xFF)
+i2c_smbus_write_byte_data(file_number,__LED0_OFF_H+4 * CHANNEL, off >> 8)
+}
   
 
   
