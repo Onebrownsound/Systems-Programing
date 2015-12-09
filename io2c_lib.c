@@ -101,8 +101,8 @@ void move_servo(int file_number)
 		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF));
 		i2c_smbus_write_byte_data(file_number,__LED0_ON_H, 0 >> 8);
 
-		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MIN & 0xFF);
-		i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MIN >> 8);
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MAX & 0xFF);
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MAX >> 8);
 	}
 }
 
