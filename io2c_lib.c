@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
+#include <time.h>
+#include <math.h>
+#include <unistd.h>
+
 //Setup macros for Register constants from PYTHON lib
 #define  __MODE1           0x00
 #define  __MODE2	   0x01
@@ -60,22 +64,57 @@ int setup() //setup tells the kernel i2c driver which i2c to use
 	return file; //returns fd just in case we need it
 }
 
+void set_pwm_freq(int fd,float freq)
+{	
+float prescaleval = 25000000.0;
+float prescale;
+int oldmode;
+int newmode;
+prescaleval /= 4096.0 ;      
+prescaleval /= freq;
+prescaleval -= 1.0;
+prescale = floor( prescaleval + 0.5);
+oldmode = i2c_smbus_read_byte_data(fd,__MODE1);
+newmode = (oldmode & 0x7F) | 0x10;
+i2c_smbus_write_byte_data(fd,__MODE1,newmode);
+i2c_smbus_write_byte_data(fd,__PRESCALE,prescale);
+i2c_smbus_write_byte_data(fd,__MODE1,oldmode);
+sleep(1);
+i2c_smbus_write_byte_data(fd,__MODE1,oldmode | 0x80);
 
+}
+
+void move_servo(int file_number)
+{
+	while(1)
+	{
+		//write byte data to (file,register,value)
+
+		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF));
+		i2c_smbus_write_byte_data(file_number,__LED0_ON_H, 0 >> 8);
+
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MIN & 0xFF);
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MIN >> 8);
+
+		sleep(1);
+
+		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF));
+		i2c_smbus_write_byte_data(file_number,__LED0_ON_H, 0 >> 8);
+
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MIN & 0xFF);
+		i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MIN >> 8);
+	}
+}
 
 
 int main (int argc, char * argv [] )
 {
-printf("Hello");
+
 int file_number;
 file_number=setup();
 printf("The file_number is  %i /n",file_number);
-while(1){
-//write byte data to (file,register,value)
-i2c_smbus_write_byte_data (file_number,__LED0_ON_L, SERVO_MIN & 0xFF);
-i2c_smbus_write_byte_data(file_number,__LED0_ON_H, SERVO_MIN >> 8);
-i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MAX & 0xFF);
-i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MAX >> 8);
-}
+move_servo(file_number);
+
 
 return 0;
 }
