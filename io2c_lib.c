@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
-#include <time.h>
 #include <math.h>
 #include <unistd.h>
 
@@ -43,11 +42,12 @@
 
 
 int setup() //setup tells the kernel i2c driver which i2c to use
-{	printf("Attempting to setup i2c file");
+{	printf("Attempting to setup i2c file \n");
 	int file;
 	int adapter_nr = 1; /* needs to be looked up in /dev/i2c-NUMBERISHERE for me it is 1 */
 	char *filename = "/dev/i2c-1";
 	file = open(filename, O_RDWR);
+	printf("File number is %i \n",file);
 	if (file < 0) {
 	 /* ERROR HANDLING;*/
 	 exit(1);
@@ -65,15 +65,17 @@ int setup() //setup tells the kernel i2c driver which i2c to use
 }
 
 void set_pwm_freq(int fd,float freq)
-{	
+{
+printf("Seeting the frequency \n");
 float prescaleval = 25000000.0;
-float prescale;
+int prescale= 101; //hardcording in the prescale value for 60hz
 int oldmode;
 int newmode;
-prescaleval /= 4096.0 ;      
+/* commented out due to hard cording prescale value
+prescaleval /= 4096.0 ;
 prescaleval /= freq;
 prescaleval -= 1.0;
-prescale = floor( prescaleval + 0.5);
+prescale = floor((double) prescaleval + 0.5); */
 oldmode = i2c_smbus_read_byte_data(fd,__MODE1);
 newmode = (oldmode & 0x7F) | 0x10;
 i2c_smbus_write_byte_data(fd,__MODE1,newmode);
@@ -81,24 +83,25 @@ i2c_smbus_write_byte_data(fd,__PRESCALE,prescale);
 i2c_smbus_write_byte_data(fd,__MODE1,oldmode);
 sleep(1);
 i2c_smbus_write_byte_data(fd,__MODE1,oldmode | 0x80);
-
+printf("Done setting the frequency \n");
 }
 
 void move_servo(int file_number)
 {
+	printf("Going to start moving the servo");
 	while(1)
 	{
 		//write byte data to (file,register,value)
 
-		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF));
+		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF);
 		i2c_smbus_write_byte_data(file_number,__LED0_ON_H, 0 >> 8);
 
 		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MIN & 0xFF);
 		i2c_smbus_write_byte_data(file_number,__LED0_OFF_H, SERVO_MIN >> 8);
 
-		sleep(1);
+		sleep(0.5);
 
-		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF));
+		i2c_smbus_write_byte_data (file_number,__LED0_ON_L, 0 & 0xFF);
 		i2c_smbus_write_byte_data(file_number,__LED0_ON_H, 0 >> 8);
 
 		i2c_smbus_write_byte_data(file_number,__LED0_OFF_L, SERVO_MAX & 0xFF);
@@ -107,12 +110,13 @@ void move_servo(int file_number)
 }
 
 
-int main (int argc, char * argv [] )
+int main ()
 {
-
+printf("Welcome to Dom Modica's Servo Example: \n");
 int file_number;
 file_number=setup();
-printf("The file_number is  %i /n",file_number);
+printf("The file_number is  %i \n",file_number);
+set_pwm_freq(file_number,60);
 move_servo(file_number);
 
 
